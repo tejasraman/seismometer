@@ -8,7 +8,7 @@ jobs:
     steps:
       - checkout
       - run: |
-                cd app/earthquake-detection
+                cd app/earthquake_detection
                 flutter build --debug
                 flutter build
                 mkdir /tmp/apk
