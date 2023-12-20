@@ -11,7 +11,7 @@ jobs:
                 cd app/earthquake_detection
                 flutter build apk
                 mkdir /tmp/apk
-                mv ../../build/app/outputs/flutter-apk/* /tmp/apk
+                mv build/app/outputs/flutter-apk/* /tmp/apk
       - persist_to_workspace:
                   root: /
                   paths:
