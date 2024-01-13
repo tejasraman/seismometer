@@ -1,0 +1,26 @@
+version: 2.1
+jobs:
+  flutter-build:
+    docker:
+      - image: mobiledevops/flutter-sdk-image
+    # Add steps to the job
+    # See: https://circleci.com/docs/configuration-reference/#steps
+    steps:
+      - checkout
+      - run: |
+                cd app/earthquake_detection
+                flutter build apk
+                mkdir /tmp/apk
+                mv build/app/outputs/flutter-apk/* /tmp/apk
+      - persist_to_workspace:
+                  root: /
+                  paths:
+                    - tmp/apk
+      - store_artifacts:
+                  path: /tmp/apk/
+# Orchestrate jobs using workflows
+# See: https://circleci.com/docs/configuration-reference/#workflows
+workflows:
+  flutter-build:
+    jobs:
+      - flutter-build
