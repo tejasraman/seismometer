@@ -63,7 +63,7 @@ Stream<String> riskAnalysis() async* {
 
   while (true) {
     // Wait before next fetch
-    await Future.delayed(Duration(milliseconds: 250));
+    await Future.delayed(const Duration(milliseconds: 250));
     // Fetch latest data
     final response = await get(Uri.parse(url));
     int body = int.parse(response.body);
@@ -86,7 +86,7 @@ Stream<double> earthquakeData_raw() async* {
 
   while (true) {
     // Wait before next fetch
-    await Future.delayed(Duration(milliseconds: 250));
+    await Future.delayed(const Duration(milliseconds: 250));
 
     // Fetch latest data
     final response = await get(Uri.parse(url));
@@ -108,28 +108,50 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
           seedColor: SystemTheme.accentColor.lighter,
-          background: Color(0xFF1F1E1E),
+          background: const Color(0xFF1F1E1E),
         ),
         fontFamily: 'Segoe UI Variable',
         useMaterial3: true,
       ),
       home: Scaffold(
-        appBar: AppBar(
-          automaticallyImplyLeading: false,
-          backgroundColor: TinyColor.fromColor(SystemTheme.accentColor.lighter)
-              .tint(80)
-              .color,
-          elevation: 0.0,
-          title: Text(
-            "Earthquake Detector",
-          ),
-        ),
         body: Padding(
           padding: EdgeInsets.symmetric(vertical: 13, horizontal: 13),
           child: Column(
             children: [
-              Row(
-          children: [
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.all(Radius.circular(30.0)),
+                  color: TinyColor.fromColor(SystemTheme.accentColor.lighter)
+                      .tint(90)
+                      .color,
+                ),
+                child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                    child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                        Text(
+                          "BLYNK_DEVNAME_HERE"
+                        ),
+                        Text(
+                          "Sat, Jan 20, 2024 04:16 PM"
+                        ),
+                          Row(
+                            children: [
+                              Icon(Icons.settings),
+                              Icon(Icons.usb),
+                              Icon(Icons.wifi)
+                            ]
+                          )
+                      ]
+                    )),
+              ),
+
+
+
+              SizedBox(
+                height: 10,
+              ),
               Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.all(Radius.circular(15.0)),
@@ -153,8 +175,6 @@ class MyApp extends StatelessWidget {
                         ),
                       ),
                     ]))),
-              ),
-    ],
               ),
               SizedBox(
                 height: 10,
@@ -185,7 +205,7 @@ class MyApp extends StatelessWidget {
                                   return Text('${snapshot.data}',
                                       textScaleFactor: 5);
                                 } else {
-                                  return Text(
+                                  return const Text(
                                     'Waiting for data...',
                                     textScaleFactor: 5,
                                   );
@@ -193,22 +213,22 @@ class MyApp extends StatelessWidget {
                               },
                             ))
                       ])))),
-              SizedBox(
+              const SizedBox(
                 height: 10,
               ),
               Container(
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.all(Radius.circular(15.0)),
+                  borderRadius: const BorderRadius.all(Radius.circular(15.0)),
                   color: TinyColor.fromColor(SystemTheme.accentColor.lighter)
                       .tint(90)
                       .color,
                 ),
                 child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
                   child: Center(
                     child: Column(
                       children: [
-                        Text(
+                        const Text(
                           "Risk Analysis:",
                           textScaleFactor: 2,
                         ),
