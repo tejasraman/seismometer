@@ -5,21 +5,29 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:real_time_chart/real_time_chart.dart';
+// import 'package:system_theme/system_theme.dart';
+import 'package:dartssh2/dartssh2.dart';
+import 'package:flutter/services.dart';
 import 'package:system_theme/system_theme.dart';
 import 'package:tinycolor2/tinycolor2.dart';
 
-class DevHttpOverrides extends HttpOverrides {
-  @override
-  HttpClient createHttpClient(SecurityContext? context) {
-    return super.createHttpClient(context)
-      ..badCertificateCallback =
-          (X509Certificate cert, String host, int port) => true;
-  }
-}
+// class DevHttpOverrides extends HttpOverrides {
+//   @override
+//   HttpClient createHttpClient(SecurityContext? context) {
+//     return super.createHttpClient(context)
+//       ..badCertificateCallback =
+//           (X509Certificate cert, String host, int port) => true;
+//   }
+// }
 
 void main() {
-  HttpOverrides.global = DevHttpOverrides();
-  runApp(MyApp());
+  // HttpOverrides.global = DevHttpOverrides();
+  WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [
+    SystemUiOverlay.bottom
+  ]);
+  SystemChrome.setPreferredOrientations([DeviceOrientation.landscapeLeft])
+      .then((value) => runApp(MyApp()));
 }
 
 final stream = earthquakeData();
@@ -27,7 +35,7 @@ final stream_raw = earthquakeData_raw();
 final risk_stream = riskAnalysis();
 double z = 0;
 Stream<double> earthquakeData() async* {
-  HttpOverrides.global = DevHttpOverrides();
+  // HttpOverrides.global = DevHttpOverrides();
   // Web API endpoint
   final url = 'http://192.168.137.2/datapoint.txt';
 
@@ -49,7 +57,7 @@ Stream<double> earthquakeData() async* {
 }
 
 Stream<String> riskAnalysis() async* {
-  HttpOverrides.global = DevHttpOverrides();
+  // HttpOverrides.global = DevHttpOverrides();
   // Web API endpoint
   final url = 'http://192.168.137.2/risk.txt';
 
@@ -72,7 +80,7 @@ Stream<String> riskAnalysis() async* {
 
 double y = 0;
 Stream<double> earthquakeData_raw() async* {
-  HttpOverrides.global = DevHttpOverrides();
+  // HttpOverrides.global = DevHttpOverrides();
   // Web API endpoint
   final url = 'http://192.168.137.2/datapoint.txt';
 
@@ -100,6 +108,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
           seedColor: SystemTheme.accentColor.lighter,
+          background: Color(0xFF1F1E1E),
         ),
         fontFamily: 'Segoe UI Variable',
         useMaterial3: true,
@@ -119,6 +128,8 @@ class MyApp extends StatelessWidget {
           padding: EdgeInsets.symmetric(vertical: 13, horizontal: 13),
           child: Column(
             children: [
+              Row(
+          children: [
               Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.all(Radius.circular(15.0)),
@@ -142,6 +153,8 @@ class MyApp extends StatelessWidget {
                         ),
                       ),
                     ]))),
+              ),
+    ],
               ),
               SizedBox(
                 height: 10,
