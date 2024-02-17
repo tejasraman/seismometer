@@ -32,15 +32,17 @@ dependencies:
     sdk: flutter
   system_theme:
     git: https://github.com/bdlukaa/system_theme.git
-  fluentui_system_icons: ^1.1.221
+  fluentui_system_icons: ^1.1.225
   google_nav_bar:
     git: https://github.com/sooxt98/google_nav_bar
   cupertino_icons: ^1.0.2
   tinycolor2: ^3.0.1
   http: ^1.1.0
   real_time_chart: ^0.0.1
-  dartssh2:
-    git: https://github.com/TerminalStudio/dartssh2.git
+  dartssh2: 2.8.2
+  intl: ^0.19.0
+  ssh2: ^2.2.3
+  url_launcher: ^6.2.4
 
 dev_dependencies:
   flutter_test:
@@ -83,9 +85,9 @@ flutter:
   # list giving the asset and other descriptors for the font. For
   # example:
   fonts:
-     - family: Segoe UI Variable
-       fonts:
-         - asset: fonts/Segoe-UI-Variable-Static-Display-Semibold.ttf
+    - family: Segoe UI Variable
+      fonts:
+        - asset: fonts/Segoe-UI-Variable-Static-Display-Semibold.ttf
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages

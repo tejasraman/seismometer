@@ -5,7 +5,6 @@ plugins {
 }
 
 
-
 def localProperties = new Properties()
 def localPropertiesFile = rootProject.file('local.properties')
 if (localPropertiesFile.exists()) {
@@ -38,7 +37,7 @@ android {
         jvmTarget = '1.8'
     }
     defaultConfig {
-        minSdkVersion '21'
+        minSdkVersion '32'
     }
     sourceSets {
         main.java.srcDirs += 'src/main/kotlin'

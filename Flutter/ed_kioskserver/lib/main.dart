@@ -1,15 +1,21 @@
 // Material pkg import
 // Fluent icons and theming colors
-import 'dart:io';
+// import 'package:dartssh2/dartssh2.dart';
+import 'dart:async';
+import 'dart:convert';
 
-import 'package:flutter/material.dart';
-import 'package:http/http.dart';
-import 'package:real_time_chart/real_time_chart.dart';
-// import 'package:system_theme/system_theme.dart';
 import 'package:dartssh2/dartssh2.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
+import 'package:real_time_chart/real_time_chart.dart';
 import 'package:system_theme/system_theme.dart';
 import 'package:tinycolor2/tinycolor2.dart';
+import 'package:url_launcher/url_launcher_string.dart';
+
+/////////////////////////////////////////////////
+// DO NOT USE HTTP OVERRIDES; ONLY FOR TESTING //
+/////////////////////////////////////////////////
 
 // class DevHttpOverrides extends HttpOverrides {
 //   @override
@@ -20,92 +26,118 @@ import 'package:tinycolor2/tinycolor2.dart';
 //   }
 // }
 
-void main() {
+void main() async {
   // HttpOverrides.global = DevHttpOverrides();
   WidgetsFlutterBinding.ensureInitialized();
-  SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [
-    SystemUiOverlay.bottom
-  ]);
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
+      overlays: [SystemUiOverlay.bottom]);
+
   SystemChrome.setPreferredOrientations([DeviceOrientation.landscapeLeft])
-      .then((value) => runApp(MyApp()));
+      .then((value) => runApp(MyAppSL()));
+}
+
+double z = 0;
+
+Stream<List> earthquakeData() async* {
+  final socket = await SSHSocket.connect('localhost', 5001);
+
+  final client = SSHClient(socket,
+      username: 'tejas', onPasswordRequest: () => 'ramennoodles');
+
+  final sftp = await client.sftp();
+
+  while (true) {
+    await Future.delayed(const Duration(milliseconds: 5));
+
+    final file = await sftp.open('/home/tejas/datapoint.txt');
+    final content = await file.readBytes();
+    final response = latin1.decode(content);
+
+    final file1 = await sftp.open('/home/tejas/risk.txt');
+    final content1 = await file1.readBytes();
+    final response1 = latin1.decode(content1);
+
+    List x = [];
+    x.add(response);
+    x.add(response1);
+    yield x;
+  }
+}
+
+final broadcastStream = stream.asBroadcastStream(
+  onCancel: (controller) {
+    print('Stream paused');
+    controller.pause();
+  },
+  onListen: (controller) async {
+    if (controller.isPaused) {
+      print('Stream resumed');
+      controller.resume();
+    }
+  },
+);
+
+Stream<double> calculationStream =
+    broadcastStream.map<double>((list1) => double.parse(list1.elementAt(0)));
+
+double y = 0;
+
+current_time() {
+  var now = DateTime.now();
+  var formatterTime = DateFormat('E, MMM d, y, h:m a');
+  String actualTime = formatterTime.format(now);
+  return actualTime;
+}
+
+_sshFunc(int x) async {
+  if (x == 1) {
+    final client = SSHClient(
+      await SSHSocket.connect('localhost', 5001),
+      username: 'tejas',
+      onPasswordRequest: () => 'ramennoodles',
+    );
+    final recal = await client.run('/home/tejas/bin/recalibrate');
+    print(utf8.decode(recal));
+  } else if (x == 2) {
+    String url = 'ssh://tejas@localhost:5001';
+    await launchUrlString(url);
+  } else if (x == 3) {
+    final client = SSHClient(
+      await SSHSocket.connect('localhost', 5001),
+      username: 'tejas',
+      onPasswordRequest: () => 'ramennoodles',
+    );
+    final recal = await client.run('sudo /home/tejas/rb');
+    print(utf8.decode(recal));
+  }
+}
+
+Stream<String> timestr() async* {
+  Stream.periodic(Duration(milliseconds: 500), (_) {
+    current_time();
+  });
 }
 
 final stream = earthquakeData();
-final stream_raw = earthquakeData_raw();
-final risk_stream = riskAnalysis();
-double z = 0;
-Stream<double> earthquakeData() async* {
-  // HttpOverrides.global = DevHttpOverrides();
-  // Web API endpoint
-  final url = 'http://192.168.137.2/datapoint.txt';
+final time = timestr();
 
-  while (true) {
-    // Wait before next fetch
-    await Future.delayed(Duration(milliseconds: 250));
-
-    // Fetch latest data
-    final response = await get(Uri.parse(url));
-    print(response.body);
-    // Yield fetched JSON data
-    if (response.body != "") {
-      yield double.parse(response.body);
-      double z = double.parse(response.body);
-    } else {
-      yield z;
-    }
-  }
-}
-
-Stream<String> riskAnalysis() async* {
-  // HttpOverrides.global = DevHttpOverrides();
-  // Web API endpoint
-  final url = 'http://192.168.137.2/risk.txt';
-
-  while (true) {
-    // Wait before next fetch
-    await Future.delayed(const Duration(milliseconds: 250));
-    // Fetch latest data
-    final response = await get(Uri.parse(url));
-    int body = int.parse(response.body);
-
-    if (body == 0) {
-      yield ("High");
-    } else if (body == 1) {
-      yield ("Moderate");
-    } else {
-      yield ("No Risk");
-    }
-  }
-}
-
-double y = 0;
-Stream<double> earthquakeData_raw() async* {
-  // HttpOverrides.global = DevHttpOverrides();
-  // Web API endpoint
-  final url = 'http://192.168.137.2/datapoint.txt';
-
-  while (true) {
-    // Wait before next fetch
-    await Future.delayed(const Duration(milliseconds: 250));
-
-    // Fetch latest data
-    final response = await get(Uri.parse(url));
-
-    if (response.body != "") {
-      yield double.parse(response.body);
-      double y = double.parse(response.body);
-    } else {
-      yield y;
-    }
-  }
-}
-
-class MyApp extends StatelessWidget {
+class MyAppSL extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
+        textTheme: const TextTheme().copyWith(
+          bodySmall: const TextStyle(color: Colors.white),
+          bodyMedium: const TextStyle(color: Colors.white),
+          bodyLarge: const TextStyle(color: Colors.white),
+          labelSmall: const TextStyle(color: Colors.white),
+          labelMedium: const TextStyle(color: Colors.white),
+          labelLarge: const TextStyle(color: Colors.white),
+          displaySmall: const TextStyle(color: Colors.white),
+          displayMedium: const TextStyle(color: Colors.white),
+          displayLarge: const TextStyle(color: Colors.white),
+        ),
         colorScheme: ColorScheme.fromSeed(
           seedColor: SystemTheme.accentColor.lighter,
           background: const Color(0xFF1F1E1E),
@@ -115,155 +147,200 @@ class MyApp extends StatelessWidget {
       ),
       home: Scaffold(
         body: Padding(
-          padding: EdgeInsets.symmetric(vertical: 13, horizontal: 13),
+          padding: const EdgeInsets.symmetric(vertical: 13, horizontal: 13),
           child: Column(
             children: [
               Container(
+                height: 50,
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.all(Radius.circular(30.0)),
-                  color: TinyColor.fromColor(SystemTheme.accentColor.lighter)
-                      .tint(90)
-                      .color,
-                ),
-                child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-                    child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                        Text(
-                          "BLYNK_DEVNAME_HERE"
-                        ),
-                        Text(
-                          "Sat, Jan 20, 2024 04:16 PM"
-                        ),
-                          Row(
-                            children: [
-                              Icon(Icons.settings),
-                              Icon(Icons.usb),
-                              Icon(Icons.wifi)
-                            ]
-                          )
-                      ]
-                    )),
-              ),
-
-
-
-              SizedBox(
-                height: 10,
-              ),
-              Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.all(Radius.circular(15.0)),
-                  color: TinyColor.fromColor(SystemTheme.accentColor.lighter)
-                      .tint(90)
-                      .color,
-                ),
-                child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-                    child: Center(
-                        child: Column(children: [
-                      Text(
-                        "Data Graph:",
-                        textScaleFactor: 2,
-                      ),
-                      SizedBox(
-                        height: 200,
-                        child: RealTimeGraph(
-                          stream: stream,
-                          updateDelay: Duration(milliseconds: 250),
-                        ),
-                      ),
-                    ]))),
-              ),
-              SizedBox(
-                height: 10,
-              ),
-              Container(
-                  decoration: BoxDecoration(
                     borderRadius: BorderRadius.all(Radius.circular(15.0)),
-                    color: TinyColor.fromColor(SystemTheme.accentColor.lighter)
-                        .tint(90)
-                        .color,
-                  ),
-                  child: Padding(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-                      child: Center(
-                          child: Column(children: [
-                        Text(
-                          "Raw Value:",
-                          textScaleFactor: 2,
-                        ),
-                        SizedBox(
-                            height: 125,
-                            child: StreamBuilder(
-                              stream: stream_raw,
-                              builder: (BuildContext context,
-                                  AsyncSnapshot snapshot) {
-                                if (snapshot.hasData) {
-                                  return Text('${snapshot.data}',
-                                      textScaleFactor: 5);
-                                } else {
-                                  return const Text(
-                                    'Waiting for data...',
-                                    textScaleFactor: 5,
-                                  );
-                                }
-                              },
-                            ))
-                      ])))),
-              const SizedBox(
+                    color: Color(0xFF363636)),
+                child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 12),
+                    child: Stack(
+                        fit: StackFit.passthrough,
+                        alignment: FractionalOffset.center,
+                        children: [
+                          Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text("Seismometer")),
+                          Positioned(
+                            right: 0.0,
+                            child: Icon(Icons.usb, color: Color(0xFF14FF00)),
+                          ),
+                        ])),
+              ),
+              SizedBox(
                 height: 10,
               ),
-              Container(
-                decoration: BoxDecoration(
-                  borderRadius: const BorderRadius.all(Radius.circular(15.0)),
-                  color: TinyColor.fromColor(SystemTheme.accentColor.lighter)
-                      .tint(90)
-                      .color,
+              Row(children: [
+                Expanded(
+                  flex: 6,
+                  child: Container(
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.all(Radius.circular(15.0)),
+                          color: Color(0xFF363636)),
+                      child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 20),
+                          child: Center(
+                            child: SizedBox(
+                              height: 360,
+                              child: RealTimeGraph(
+                                stream: calculationStream,
+                                updateDelay: Duration(milliseconds: 10),
+                                graphColor: Colors.white,
+                                xAxisColor: Colors.white,
+                                yAxisColor: Colors.white,
+                              ),
+                            ),
+                          ))),
                 ),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-                  child: Center(
-                    child: Column(
-                      children: [
-                        const Text(
-                          "Risk Analysis:",
-                          textScaleFactor: 2,
-                        ),
-                        SizedBox(
-                            height: 125,
-                            child: StreamBuilder(
-                              stream: risk_stream,
-                              builder: (BuildContext context,
-                                  AsyncSnapshot snapshot) {
-                                if (snapshot.data == "High") {
-                                  return Text('${snapshot.data}',
-                                      textScaleFactor: 5,
-                                      style: TextStyle(
-                                          color: TinyColor.fromString('#830000')
-                                              .color));
-                                } else if (snapshot.data == "Moderate") {
-                                  return Text('${snapshot.data}',
-                                      textScaleFactor: 5,
-                                      style: TextStyle(
-                                          color: TinyColor.fromString('#9B3F00')
-                                              .color));
-                                } else {
-                                  return Text('${snapshot.data}',
-                                      textScaleFactor: 5,
-                                      style: TextStyle(
-                                          color: TinyColor.fromString('#00791D')
-                                              .color));
-                                }
-                              },
-                            ))
-                      ],
-                    ),
-                  ),
+                SizedBox(
+                  width: 10,
                 ),
+                Expanded(
+                  flex: 2,
+                  child: Container(
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.all(Radius.circular(15.0)),
+                          color: Color(0xFF363636)),
+                      child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 20),
+                          child: Center(
+                              child: SizedBox(
+                                  height: 360,
+                                  child: Column(
+                                    children: [
+                                      Expanded(flex: 3, child: SizedBox()),
+                                      Expanded(
+                                        flex: 5,
+                                        child: StreamBuilder(
+                                          stream: broadcastStream,
+                                          builder: (BuildContext context,
+                                              AsyncSnapshot snapshot) {
+                                            if (snapshot.hasData) {
+                                              return Text(
+                                                  '${snapshot.data.elementAt(0)}',
+                                                  textScaleFactor: 5);
+                                            } else {
+                                              return Text(
+                                                '00',
+                                                textScaleFactor: 5,
+                                              );
+                                            }
+                                          },
+                                        ),
+                                      ),
+                                      Expanded(
+                                          flex: 2,
+                                          child: Text(
+                                              textScaleFactor: 1.9, "/1000")),
+                                      Expanded(
+                                          flex: 2,
+                                          child: SizedBox(
+                                            child: StreamBuilder(
+                                              stream: broadcastStream,
+                                              builder: (BuildContext context,
+                                                  AsyncSnapshot snapshot) {
+                                                var x =
+                                                    snapshot.data.elementAt(1);
+                                                if (x == "High") {
+                                                  return Text('${x}',
+                                                      textScaleFactor: 1.5,
+                                                      style: TextStyle(
+                                                          color: Color(
+                                                              0xFFFF0000)));
+                                                } else if (x == "Moderate") {
+                                                  return Text('${x}',
+                                                      textScaleFactor: 1.5,
+                                                      style: TextStyle(
+                                                          color: TinyColor
+                                                                  .fromString(
+                                                                      '#9B3F00')
+                                                              .color));
+                                                } else {
+                                                  return Text('${x}',
+                                                      textScaleFactor: 1.5,
+                                                      style: TextStyle(
+                                                          color: TinyColor
+                                                                  .fromString(
+                                                                      '#00791D')
+                                                              .color));
+                                                }
+                                                ;
+                                              },
+                                            ),
+                                          )),
+                                      Expanded(flex: 3, child: SizedBox())
+                                    ],
+                                  ))))),
+                ),
+              ]),
+              SizedBox(
+                height: 10,
               ),
+              Expanded(
+                flex: 1,
+                child: Container(
+                    decoration: BoxDecoration(
+                        borderRadius: BorderRadius.all(Radius.circular(15.0)),
+                        color: Color(0xFF363636)),
+                    child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 20),
+                        child: Row(
+                          children: [
+                            Expanded(
+                                child: TextButton(
+                                    onPressed: () => _sshFunc(1),
+                                    child: Center(
+                                        child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                          Icon(
+                                            Icons.rotate_left,
+                                            color: Colors.white,
+                                            size: 20,
+                                          ),
+                                          Text("Recalibrate")
+                                        ]))),
+                                flex: 1),
+                            Expanded(
+                                child: TextButton(
+                                    onPressed: () => _sshFunc(2),
+                                    child: Center(
+                                        child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                          Icon(
+                                            Icons.terminal,
+                                            color: Colors.white,
+                                            size: 20,
+                                          ),
+                                          Text(" Open SSH"),
+                                        ]))),
+                                flex: 1),
+                            Expanded(
+                                child: TextButton(
+                                    onPressed: () => _sshFunc(3),
+                                    child: Center(
+                                        child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                          Icon(
+                                            Icons.power_settings_new,
+                                            color: Colors.white,
+                                            size: 20,
+                                          ),
+                                          Text("Reboot")
+                                        ]))),
+                                flex: 1)
+                          ],
+                        ))),
+              )
             ],
           ),
         ),
