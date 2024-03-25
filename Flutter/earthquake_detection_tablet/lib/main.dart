@@ -53,9 +53,17 @@ Stream<List> earthquakeData() async* {
     final content = await file.readBytes();
     final response = latin1.decode(content);
 
+    if (response == null) {
+      double response = 0.0;
+    }
+
     final file1 = await sftp.open('/home/tejas/risk.txt');
     final content1 = await file1.readBytes();
     final response1 = latin1.decode(content1);
+
+    if (response1 == null) {
+      String response1 = "No Risk";
+    }
 
     List x = [];
     x.add(response);
@@ -189,8 +197,9 @@ class MyAppSL extends StatelessWidget {
                               height: 360,
                               child: RealTimeGraph(
                                 stream: calculationStream,
-                                updateDelay: Duration(milliseconds: 10),
+                                updateDelay: Duration(milliseconds: 25),
                                 graphColor: Colors.white,
+                                pointsSpacing: double.parse("1.0"),
                                 xAxisColor: Colors.white,
                                 yAxisColor: Colors.white,
                               ),
@@ -214,7 +223,7 @@ class MyAppSL extends StatelessWidget {
                                   height: 360,
                                   child: Column(
                                     children: [
-                                      Expanded(flex: 3, child: SizedBox()),
+                                      Expanded(flex: 4, child: SizedBox()),
                                       Expanded(
                                         flex: 5,
                                         child: StreamBuilder(
@@ -224,20 +233,16 @@ class MyAppSL extends StatelessWidget {
                                             if (snapshot.hasData) {
                                               return Text(
                                                   '${snapshot.data.elementAt(0)}',
-                                                  textScaleFactor: 5);
+                                                  textScaleFactor: 4.5);
                                             } else {
                                               return Text(
                                                 '00',
-                                                textScaleFactor: 5,
+                                                textScaleFactor: 4.5,
                                               );
                                             }
                                           },
                                         ),
                                       ),
-                                      Expanded(
-                                          flex: 2,
-                                          child: Text(
-                                              textScaleFactor: 1.9, "/1000")),
                                       Expanded(
                                           flex: 2,
                                           child: SizedBox(
@@ -248,22 +253,22 @@ class MyAppSL extends StatelessWidget {
                                                 var x =
                                                     snapshot.data.elementAt(1);
                                                 if (x == "High") {
-                                                  return Text('${x}',
-                                                      textScaleFactor: 1.5,
+                                                  return Text('Risk: ${x}',
+                                                      textScaleFactor: 2,
                                                       style: TextStyle(
                                                           color: Color(
                                                               0xFFFF0000)));
-                                                } else if (x == "Moderate") {
-                                                  return Text('${x}',
-                                                      textScaleFactor: 1.5,
+                                                } else if (x == "Medium") {
+                                                  return Text('Risk: ${x}',
+                                                      textScaleFactor: 2,
                                                       style: TextStyle(
                                                           color: TinyColor
                                                                   .fromString(
                                                                       '#9B3F00')
                                                               .color));
                                                 } else {
-                                                  return Text('${x}',
-                                                      textScaleFactor: 1.5,
+                                                  return Text('Risk: ${x}',
+                                                      textScaleFactor: 2,
                                                       style: TextStyle(
                                                           color: TinyColor
                                                                   .fromString(
@@ -274,7 +279,7 @@ class MyAppSL extends StatelessWidget {
                                               },
                                             ),
                                           )),
-                                      Expanded(flex: 3, child: SizedBox())
+                                      Expanded(flex: 4, child: SizedBox())
                                     ],
                                   ))))),
                 ),
@@ -295,21 +300,6 @@ class MyAppSL extends StatelessWidget {
                           children: [
                             Expanded(
                                 child: TextButton(
-                                    onPressed: () => _sshFunc(1),
-                                    child: Center(
-                                        child: Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                          Icon(
-                                            Icons.rotate_left,
-                                            color: Colors.white,
-                                            size: 20,
-                                          ),
-                                          Text("Recalibrate")
-                                        ]))),
-                                flex: 1),
-                            Expanded(
-                                child: TextButton(
                                     onPressed: () => _sshFunc(2),
                                     child: Center(
                                         child: Row(
@@ -320,7 +310,12 @@ class MyAppSL extends StatelessWidget {
                                             color: Colors.white,
                                             size: 20,
                                           ),
-                                          Text(" Open SSH"),
+                                          Text(
+                                            "  Open SSH",
+                                            textScaleFactor: 1.25,
+                                            style:
+                                                TextStyle(color: Colors.white),
+                                          ),
                                         ]))),
                                 flex: 1),
                             Expanded(
@@ -335,7 +330,12 @@ class MyAppSL extends StatelessWidget {
                                             color: Colors.white,
                                             size: 20,
                                           ),
-                                          Text("Reboot")
+                                          Text(
+                                            "  Reboot",
+                                            textScaleFactor: 1.25,
+                                            style:
+                                                TextStyle(color: Colors.white),
+                                          )
                                         ]))),
                                 flex: 1)
                           ],
