@@ -36,42 +36,65 @@ void main() async {
       .then((value) => runApp(MyAppSL()));
 }
 
-double z = 0;
+int rk = 1;
+double rv = 0.0;
 
 Stream<List> earthquakeData() async* {
   final socket = await SSHSocket.connect('localhost', 5001);
-
-  final client = SSHClient(socket,
+  final List<String> risks = ["Lo", "Med", "Hi"];
+  SSHClient client = SSHClient(socket,
       username: 'tejas', onPasswordRequest: () => 'ramennoodles');
-
-  final sftp = await client.sftp();
+  SftpClient sftp = await client.sftp();
+  var problem = false;
 
   while (true) {
-    await Future.delayed(const Duration(milliseconds: 5));
-
-    final file = await sftp.open('/home/tejas/datapoint.txt');
-    final content = await file.readBytes();
-    final response = latin1.decode(content);
-
-    if (response == "") {
-      double response = 0.0;
-    }
-
-    final file1 = await sftp.open('/home/tejas/risk.txt');
-    final content1 = await file1.readBytes();
-    String response1 = (latin1.decode(content1)).toString();
-
+    await Future.delayed(const Duration(milliseconds: 20));
     List x = [];
-    x.add(response);
+    try {
+      final file = await sftp.open('/home/tejas/datapoint.txt');
+      final content = await file.readBytes();
+      final response = latin1.decode(content);
+      if (response.trim() != "") {
+        rv = double.parse(response);
+      }
+    } on SftpStatusError catch (e) {
+      problem = true;
+    }
+    x.add(rv.toString());
 
-    if (response1.toString() == "3") {
-      x.add("High");
-    } else if (response1.toString() == "2") {
-      x.add("Medium");
-    } else {
-      x.add("No Risk");
+    try {
+      final file1 = await sftp.open('/home/tejas/risk.txt');
+      final content1 = await file1.readBytes();
+      final response = latin1.decode(content1);
+      if (response.trim() != "") {
+        rk = int.parse(response);
+      }
+    } on SftpStatusError catch (e) {
+      problem = true;
     }
 
+    Stream<List> earthquakeData() async* {
+      final socket = await SSHSocket.connect('localhost', 5001);
+      final List<String> risks = ["Lo", "Med", "Hi"];
+      SSHClient client = SSHClient(socket,
+          username: 'tejas', onPasswordRequest: () => 'ramennoodles');
+      SftpClient sftp = await client.sftp();
+      var problem = false;
+
+      while (true) {}
+    }
+
+    // restart connection if there was a problem
+    if (problem) {
+      client.close();
+      client = SSHClient(socket,
+          username: 'tejas', onPasswordRequest: () => 'ramennoodles');
+      sftp = await client.sftp();
+      problem = false;
+    }
+
+    x.add(risks[rk - 1]);
+    print(x);
     yield x;
   }
 }
@@ -102,26 +125,12 @@ _sshFunc(int x) async {
       username: 'tejas',
       onPasswordRequest: () => 'ramennoodles',
     );
-    final recal = await client.run('sudo /home/tejas/rb');
+    final recal = await client.run('bash /home/tejas/toggle.bash');
     print(utf8.decode(recal));
   }
 }
 
 final stream = earthquakeData();
-
-class CartesianSeis extends StatefulWidget {
-  const CartesianSeis({super.key});
-
-  @override
-  State<CartesianSeis> createState() => _CartesianSeisState();
-}
-
-class _CartesianSeisState extends State<CartesianSeis> {
-  @override
-  Widget build(BuildContext context) {
-    return const Placeholder();
-  }
-}
 
 class MyAppSL extends StatelessWidget {
   @override
@@ -163,12 +172,12 @@ class MyAppSL extends StatelessWidget {
                         decoration: BoxDecoration(
                             borderRadius:
                                 BorderRadius.all(Radius.circular(15.0)),
-                            color: Color(0xFFFFFFFF)),
+                            color: Color(0xCD1A1A1A)),
                         child: Center(
                             child: Text(
-                          "Graph:",
+                          "Quake-O-Meter",
                           textScaleFactor: 1.15,
-                          style: TextStyle(color: Colors.black87),
+                          style: TextStyle(color: Colors.white70),
                         ))),
                   ),
                   Expanded(flex: 15, child: Container()),
@@ -178,7 +187,7 @@ class MyAppSL extends StatelessWidget {
                           decoration: BoxDecoration(
                               borderRadius:
                                   BorderRadius.all(Radius.circular(15.0)),
-                              color: Color(0xFFFFFFFF)),
+                              color: Color(0xCDC7C7C7)),
                           child: Padding(
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 20, vertical: 20),
@@ -190,6 +199,7 @@ class MyAppSL extends StatelessWidget {
                                   pointsSpacing: double.parse("1.0"),
                                   xAxisColor: Colors.black,
                                   yAxisColor: Colors.black,
+                                  graphStroke: 3,
                                 ),
                               )))),
                   Expanded(flex: 15, child: Container()),
@@ -202,13 +212,13 @@ class MyAppSL extends StatelessWidget {
                               decoration: BoxDecoration(
                                   borderRadius:
                                       BorderRadius.all(Radius.circular(15.0)),
-                                  color: Color(0xFFFFFFFF)),
+                                  color: Color(0xCD1A1A1A)),
                               child: Center(
                                   child: Text(
-                                "Value:",
+                                "Raw Value",
                                 textScaleFactor: 1.2,
                                 style: TextStyle(
-                                    color: Colors.black87,
+                                    color: Colors.white70,
                                     fontWeight: FontWeight.w400),
                               )))),
                       SizedBox(width: 15),
@@ -218,13 +228,13 @@ class MyAppSL extends StatelessWidget {
                               decoration: BoxDecoration(
                                   borderRadius:
                                       BorderRadius.all(Radius.circular(15.0)),
-                                  color: Color(0xFFFFFFFF)),
+                                  color: Color(0xCD1A1A1A)),
                               child: Center(
                                   child: Text(
-                                "Risk:",
+                                "Risk",
                                 textScaleFactor: 1.2,
                                 style: TextStyle(
-                                    color: Colors.black87,
+                                    color: Colors.white70,
                                     fontWeight: FontWeight.w400),
                               )))),
                       SizedBox(width: 15),
@@ -234,13 +244,13 @@ class MyAppSL extends StatelessWidget {
                               decoration: BoxDecoration(
                                   borderRadius:
                                       BorderRadius.all(Radius.circular(15.0)),
-                                  color: Color(0xFFFFFFFF)),
+                                  color: Color(0xCD1A1A1A)),
                               child: Center(
                                   child: Text(
-                                "Tools:",
+                                "Tools",
                                 textScaleFactor: 1.2,
                                 style: TextStyle(
-                                    color: Colors.black87,
+                                    color: Colors.white70,
                                     fontWeight: FontWeight.w400),
                               )))),
                     ]),
@@ -255,16 +265,15 @@ class MyAppSL extends StatelessWidget {
                               decoration: BoxDecoration(
                                   borderRadius:
                                       BorderRadius.all(Radius.circular(15.0)),
-                                  color: Color(0xFFFFFFFF)),
+                                  color: Color(0xCDC7C7C7)),
                               child: Center(
-                                  child: Column(children: [
-                                StreamBuilder(
+                                child: StreamBuilder(
                                     stream: broadcastStream,
                                     builder: (BuildContext context,
                                         AsyncSnapshot snapshot) {
                                       if (snapshot.hasData) {
                                         return Text(
-                                            '${double.parse(snapshot.data.elementAt(0)).floor()}',
+                                            '${double.parse(snapshot.data.elementAt(0)).round()}',
                                             textScaleFactor: 4.5);
                                       } else {
                                         return Text(
@@ -273,60 +282,51 @@ class MyAppSL extends StatelessWidget {
                                         );
                                       }
                                     }),
-                                StreamBuilder(
-                                  stream: broadcastStream,
-                                  builder: (BuildContext context,
-                                      AsyncSnapshot snapshot) {
-                                    if (snapshot.hasData) {
-                                      return Text(
-                                          '.${((double.parse(snapshot.data.elementAt(0)) - double.parse(snapshot.data.elementAt(0)).floor()) * 10).floor()}',
-                                          textScaleFactor: 2);
-                                    } else {
-                                      return Text(
-                                        '00',
-                                        textScaleFactor: 2,
-                                      );
-                                    }
-                                  },
-                                )
-                              ])))),
+                              ))),
                       SizedBox(width: 15),
                       Expanded(
                           flex: 1,
-                          child: Container(
-                              decoration: BoxDecoration(
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(15.0)),
-                                  color: Color(0xFFFFFFFF)),
-                              child: Center(
-                                  child: StreamBuilder(
-                                stream: broadcastStream,
-                                builder: (BuildContext context,
-                                    AsyncSnapshot snapshot) {
-                                  var x = snapshot.data.elementAt(1);
-                                  if (x == "High") {
-                                    return Text('${x}',
-                                        textScaleFactor: 2,
-                                        style: TextStyle(
-                                            color: Color(0xFFFF0000)));
-                                  } else if (x == "Medium") {
-                                    return Text('${x}',
-                                        textScaleFactor: 2,
-                                        style: TextStyle(
-                                            color:
-                                                TinyColor.fromString('#9B3F00')
-                                                    .color));
-                                  } else {
-                                    return Text('${x}',
-                                        textScaleFactor: 2,
-                                        style: TextStyle(
-                                            color:
-                                                TinyColor.fromString('#00791D')
-                                                    .color));
-                                  }
-                                  ;
-                                },
-                              )))),
+                          child: StreamBuilder(
+                            stream: broadcastStream,
+                            builder:
+                                (BuildContext context, AsyncSnapshot snapshot) {
+                              var x = snapshot.data.elementAt(1);
+                              if (x == "Hi") {
+                                return Container(
+                                    decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.all(
+                                            Radius.circular(15.0)),
+                                        color: Color(0xFFFF0000)),
+                                    child: Center(
+                                        child: Text('${x}',
+                                            textScaleFactor: 4.5,
+                                            style: TextStyle(
+                                                color: Color(0xFFFFFFFF)))));
+                              } else if (x == "Med") {
+                                return Container(
+                                    decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.all(
+                                            Radius.circular(15.0)),
+                                        color: Color(0xFFF39C12)),
+                                    child: Center(
+                                        child: Text('${x}',
+                                            textScaleFactor: 4.5,
+                                            style: TextStyle(
+                                                color: Color(0xFFFFFFFF)))));
+                              } else {
+                                return Container(
+                                    decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.all(
+                                            Radius.circular(15.0)),
+                                        color: Color(0xFF0D981B)),
+                                    child: Center(
+                                        child: Text('${x}',
+                                            textScaleFactor: 4.5,
+                                            style: TextStyle(
+                                                color: Color(0xFFFFFFFF)))));
+                              }
+                            },
+                          )),
                       SizedBox(width: 15),
                       Expanded(
                           flex: 3,
@@ -334,7 +334,7 @@ class MyAppSL extends StatelessWidget {
                               decoration: BoxDecoration(
                                   borderRadius:
                                       BorderRadius.all(Radius.circular(15.0)),
-                                  color: Color(0xFFFFFFFF)),
+                                  color: Color(0xCDC7C7C7)),
                               child: Padding(
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 20, vertical: 10),
@@ -351,17 +351,17 @@ class MyAppSL extends StatelessWidget {
                                                     Icon(
                                                       Icons.terminal,
                                                       color: Colors.black87,
-                                                      size: 20,
+                                                      size: 60,
                                                     ),
                                                     Text(
-                                                      "  Open SSH",
-                                                      textScaleFactor: 1.25,
+                                                      " SSH",
+                                                      textScaleFactor: 3,
                                                       style: TextStyle(
                                                           color:
                                                               Colors.black87),
                                                     ),
                                                   ]))),
-                                          flex: 1),
+                                          flex: 2),
                                       Expanded(
                                           child: TextButton(
                                               onPressed: () => _sshFunc(3),
@@ -373,17 +373,17 @@ class MyAppSL extends StatelessWidget {
                                                     Icon(
                                                       Icons.power_settings_new,
                                                       color: Colors.black87,
-                                                      size: 20,
+                                                      size: 60,
                                                     ),
                                                     Text(
-                                                      "  Reboot",
-                                                      textScaleFactor: 1.25,
+                                                      " Start/Stop",
+                                                      textScaleFactor: 3,
                                                       style: TextStyle(
                                                           color:
                                                               Colors.black87),
                                                     )
                                                   ]))),
-                                          flex: 1)
+                                          flex: 3)
                                     ],
                                   ))))
                     ]),
