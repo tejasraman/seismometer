@@ -1,16 +1,6 @@
-# earthquake_detection
+# Earthquake Detection (tablet)
 
-A new Flutter project.
+This UI provides an effective interface to display data from an SSH-connected device running thr Python scripts hosted in this repository.
+This UI also forwards all traffic to the Blynk web console through HTTPS for viewing on other devices, such as phones, laptops, and desktops.
 
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+For more information, view the main repo page and/or Python scripts.
