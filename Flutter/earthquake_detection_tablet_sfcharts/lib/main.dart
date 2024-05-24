@@ -57,7 +57,7 @@ Stream<List> earthquakeData() async* {
       if (response.trim() != "") {
         rv = double.parse(response);
       }
-    } on SftpStatusError catch (e) {
+    } on SftpStatusError {
       problem = true;
     }
     x.add(rv.toString());
@@ -69,7 +69,7 @@ Stream<List> earthquakeData() async* {
       if (response.trim() != "") {
         rk = int.parse(response);
       }
-    } on SftpStatusError catch (e) {
+    } on SftpStatusError {
       problem = true;
     }
 
