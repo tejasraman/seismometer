@@ -45,6 +45,8 @@ dependencies:
   url_launcher: ^6.2.4
   syncfusion_flutter_charts: ^24.2.6
   syncfusion_flutter_core: ^24.2.6
+  dart_nats: ^0.6.2
+  onesignal_flutter: ^5.1.2
 
 dev_dependencies:
   flutter_test:
