@@ -1,6 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:onesignal_flutter/onesignal_flutter.dart';
+import 'package:mesh_gradient/mesh_gradient.dart';
+import 'package:flutter/services.dart';
+import 'package:tinycolor2/tinycolor2.dart';
+
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  // make navigation bar transparent
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      systemNavigationBarColor: Colors.transparent,
+    ),
+  );
+  // make flutter draw behind navigation bar
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge, overlays: [SystemUiOverlay.top]);
   runApp(const MyApp());
 }
 
@@ -10,7 +24,34 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return Container(
+        decoration: const BoxDecoration(
+          color: Colors.black,
+        ),
+      child: MeshGradient(
+          points: [
+            MeshGradientPoint(
+              position: Offset(1, 0.01),
+              color: TinyColor.fromString('#0B0010').toColor(),
+            ),
+
+            MeshGradientPoint(
+              position: const Offset(
+                0.01,
+                1,
+              ),
+              color: TinyColor.fromString('#000719').toColor()
+            ),
+            MeshGradientPoint(
+              position: const Offset(
+                0,
+                0.5,
+              ),
+              color: TinyColor.fromString('#001301').toColor()
+            ),
+          ],
+          options: MeshGradientOptions(blend: 2.5),
+      child: MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
         // This is the theme of your application.
@@ -29,15 +70,19 @@ class MyApp extends StatelessWidget {
         // This works for code too, not just values: Most code changes can be
         // tested with just a hot reload.
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+    scaffoldBackgroundColor: Colors.transparent,
         useMaterial3: true,
       ),
       home: const MyHomePage(title: 'Flutter Demo Home Page'),
-    );
-  }
-}
+    ),
+    ));
+}}
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
+
+
+
 
   // This widget is the home page of your application. It is stateful, meaning
   // that it has a State object (defined below) that contains fields that affect
@@ -53,9 +98,14 @@ class MyHomePage extends StatefulWidget {
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
-
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
+
+  void initState() {
+    super.initState();
+    OneSignal.initialize("1c785572-5466-4027-b9d2-9b48f04b791a");
+    OneSignal.Notifications.requestPermission(true);
+  }
 
   void _incrementCounter() {
     setState(() {

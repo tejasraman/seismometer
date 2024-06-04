@@ -1,0 +1,8 @@
+[22:21:10 2024-06-01] FETCHING Version 2.36.12
+[22:21:10 2024-06-01] DOWNLOADING https://github.com/spicetify/cli/releases/download/v2.36.12/spicetify-2.36.12-linux-amd64.tar.gz
+[22:21:12 2024-06-01] EXTRACTING /home/tejas/.spicetify/spicetify.tar.gz
+[22:21:12 2024-06-01] SETTING EXECUTABLE PERMISSIONS TO /home/tejas/.spicetify/spicetify
+[22:21:12 2024-06-01] REMOVING /home/tejas/.spicetify/spicetify.tar.gz
+[22:21:12 2024-06-01] APPENDING /home/tejas/.spicetify to PATH in /home/tejas/.config/fish/config.fish
+[22:21:12 2024-06-01] spicetify v2.36.12 was installed successfully to /home/tejas/.spicetify
+[22:21:12 2024-06-01] Run 'spicetify --help' to get started

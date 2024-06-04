@@ -13,7 +13,8 @@ import 'package:real_time_chart/real_time_chart.dart';
 // import 'package:tinycolor2/tinycolor2.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:dart_nats/dart_nats.dart' as nats;
-import 'package:onesignal_flutter/onesignal_flutter.dart';
+import 'package:http/http.dart' as http;
+import 'globals.dart' as globals;
 
 /////////////////////////////////////////////////
 // DO NOT USE HTTP OVERRIDES; ONLY FOR TESTING //
@@ -22,7 +23,7 @@ import 'package:onesignal_flutter/onesignal_flutter.dart';
 // class DevHttpOverrides extends HttpOverrides {
 //   @override
 //   HttpClient createHttpClient(SecurityContext? context) {
-//     return super.createHttpC/opt/warpdotdev/warp-terminal/warp: /lib64/libcurl.so.4: no version information available (required by /opt/warpdotdev/warp-terminal/warp)lient(context)
+//     return super.createHttpClient(context)
 //       ..badCertificateCallback =
 //           (X509Certificate cert, String host, int port) => true;
 //   }
@@ -33,7 +34,6 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
       overlays: [SystemUiOverlay.bottom]);
-
   SystemChrome.setPreferredOrientations([DeviceOrientation.landscapeLeft])
       .then((value) => runApp(MyAppSL()));
 }
@@ -115,9 +115,13 @@ void main() async {
 
 // double y = 0;
 //
+
+
+
+
 _sshFunc(int x) async {
   if (x == 2) {
-    String url = 'ssh://tejas@localhost:5001';
+    String url = 'ssh://tejas@localhost:5002';
     await launchUrlString(url);
   } else if (x == 3) {
     final client = SSHClient(
@@ -169,12 +173,6 @@ late nats.Subscription seismometer, risk;
 
 void initState() {
 super.initState();
-
-OneSignal.Debug.setLogLevel(OSLogLevel.verbose);
-OneSignal.initialize("1c785572-5466-4027-b9d2-9b48f04b791a");
-OneSignal.Notifications.requestPermission(true);
-
-
 connect();
 }
 
@@ -184,6 +182,7 @@ natsClient.connect(Uri.parse('nats://localhost:5001'));
 seismometer = natsClient.sub('data');
 risk = natsClient.sub('risk');
 }
+
 
 Widget build(BuildContext context) {
 return Scaffold(
@@ -324,8 +323,39 @@ flex: 1,
 child: StreamBuilder(
 stream: risk.stream,
 builder:
-(BuildContext context, AsyncSnapshot snapshot) {
+(BuildContext context, AsyncSnapshot snapshot)  {
 var x = int.parse(snapshot.data.string);
+if (double.parse(snapshot.data.string) == 2) {
+  globals.samples = globals.samples + 1;
+  print(globals.samples);
+} else {
+  globals.samples = 0;
+}
+if (globals.samples == 65) {
+  try {
+   http.post(
+      Uri.parse('https://api.onesignal.com/notifications'),
+      headers: <String, String>{
+        'Authorization': 'Basic MDRiNTExOTMtNjI3OC00Y2FiLWExOTMtYmVkZWM3ZDAyZWRj',
+        'accept': 'application/json',
+        'content-type': 'application/json'
+      },
+      body: jsonEncode(globals.responseBody),
+    ).then((response) {
+    if (response.statusCode == 200) {
+      print(response.body);
+
+    } else {
+      print('Failed to send notification. Status code: ${response.statusCode}');
+      print('Response body: ${response.body}');
+    }});
+  } catch (e) {
+    print('Error occurred while sending notification: $e');
+  }
+  print("HTTP sent");
+  globals.samples = 0;
+}
+
 if (x == 2) {
 return Container(
 decoration: BoxDecoration(
