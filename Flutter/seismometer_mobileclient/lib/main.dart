@@ -3,6 +3,7 @@ import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:mesh_gradient/mesh_gradient.dart';
 import 'package:flutter/services.dart';
 import 'package:tinycolor2/tinycolor2.dart';
+import 'apikeys.dart' as apikeys;
 
 
 void main() {
@@ -103,7 +104,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void initState() {
     super.initState();
-    OneSignal.initialize("1c785572-5466-4027-b9d2-9b48f04b791a");
+    OneSignal.initialize("${apikeys.ONESIGNAL_APPID}");
     OneSignal.Notifications.requestPermission(true);
   }
 

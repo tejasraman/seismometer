@@ -1,7 +1,6 @@
 // Material pkg import
 // Fluent icons and theming colors
 // import 'package:dartssh2/dartssh2.dart';
-import 'dart:async';
 import 'dart:convert';
 
 import 'package:dartssh2/dartssh2.dart';
@@ -15,6 +14,7 @@ import 'package:url_launcher/url_launcher_string.dart';
 import 'package:dart_nats/dart_nats.dart' as nats;
 import 'package:http/http.dart' as http;
 import 'globals.dart' as globals;
+import 'apikeys.dart' as apikeys;
 
 /////////////////////////////////////////////////
 // DO NOT USE HTTP OVERRIDES; ONLY FOR TESTING //
@@ -35,7 +35,7 @@ void main() async {
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
       overlays: [SystemUiOverlay.bottom]);
   SystemChrome.setPreferredOrientations([DeviceOrientation.landscapeLeft])
-      .then((value) => runApp(MyAppSL()));
+      .then((value) => runApp(const MyAppSL()));
 }
 //
 // int rk = 1;
@@ -139,6 +139,8 @@ _sshFunc(int x) async {
 
 
 class MyAppSL extends StatelessWidget {
+  const MyAppSL({super.key});
+
 @override
 Widget build(BuildContext context) {
 return MaterialApp(
@@ -158,11 +160,14 @@ displayLarge: const TextStyle(color: Colors.black87),
 fontFamily: 'Segoe UI Variable',
 useMaterial3: true,
 ),
-home: MyApp());
+home: const MyApp());
 }
 }
 
 class MyApp extends StatefulWidget {
+  const MyApp({super.key});
+
+  @override
   _MyApp createState() => _MyApp();
 }
 
@@ -171,7 +176,8 @@ class _MyApp extends State<MyApp> {
 late nats.Client natsClient;
 late nats.Subscription seismometer, risk;
 
-void initState() {
+@override
+  void initState() {
 super.initState();
 connect();
 }
@@ -184,13 +190,14 @@ risk = natsClient.sub('risk');
 }
 
 
-Widget build(BuildContext context) {
+@override
+  Widget build(BuildContext context) {
 return Scaffold(
-body: Container(
+body: SizedBox(
 width: 1280,
 height: 800,
 child: DecoratedBox(
-decoration: BoxDecoration(
+decoration: const BoxDecoration(
 image: DecorationImage(
 image: AssetImage("assets/BG_gradient.png"),
 fit: BoxFit.cover),
@@ -202,11 +209,11 @@ children: [
 Expanded(
 flex: 60,
 child: Container(
-decoration: BoxDecoration(
+decoration: const BoxDecoration(
 borderRadius:
 BorderRadius.all(Radius.circular(15.0)),
 color: Color(0xCD1A1A1A)),
-child: Center(
+child: const Center(
 child: Text(
 "Quake-O-Meter",
 textScaleFactor: 1.15,
@@ -217,7 +224,7 @@ Expanded(flex: 15, child: Container()),
 Expanded(
 flex: 480,
 child: Container(
-decoration: BoxDecoration(
+decoration: const BoxDecoration(
 borderRadius: BorderRadius.all(Radius.circular(15.0)),
 color: Color(0xCDC7C7C7)),
   child: Padding(
@@ -225,7 +232,7 @@ color: Color(0xCDC7C7C7)),
   child: Center(
   child: RealTimeGraph(
   stream: seismometer.stream.map<double>((val) => double.parse(val.string)),
-  updateDelay: Duration(milliseconds: 25),
+  updateDelay: const Duration(milliseconds: 25),
   graphColor: Colors.black,
   pointsSpacing: double.parse("1.0"),
   xAxisColor: Colors.black,
@@ -243,11 +250,11 @@ child: Row(children: [
 Expanded(
 flex: 1,
 child: Container(
-decoration: BoxDecoration(
+decoration: const BoxDecoration(
 borderRadius:
 BorderRadius.all(Radius.circular(15.0)),
 color: Color(0xCD1A1A1A)),
-child: Center(
+child: const Center(
 child: Text(
 "Raw Value",
 textScaleFactor: 1.2,
@@ -255,15 +262,15 @@ style: TextStyle(
 color: Colors.white70,
 fontWeight: FontWeight.w400),
 )))),
-SizedBox(width: 15),
+const SizedBox(width: 15),
 Expanded(
 flex: 1,
 child: Container(
-decoration: BoxDecoration(
+decoration: const BoxDecoration(
 borderRadius:
 BorderRadius.all(Radius.circular(15.0)),
 color: Color(0xCD1A1A1A)),
-child: Center(
+child: const Center(
 child: Text(
 "Risk",
 textScaleFactor: 1.2,
@@ -271,15 +278,15 @@ style: TextStyle(
 color: Colors.white70,
 fontWeight: FontWeight.w400),
 )))),
-SizedBox(width: 15),
+const SizedBox(width: 15),
 Expanded(
 flex: 3,
 child: Container(
-decoration: BoxDecoration(
+decoration: const BoxDecoration(
 borderRadius:
 BorderRadius.all(Radius.circular(15.0)),
 color: Color(0xCD1A1A1A)),
-child: Center(
+child: const Center(
 child: Text(
 "Tools",
 textScaleFactor: 1.2,
@@ -296,7 +303,7 @@ child: Row(children: [
 Expanded(
 flex: 1,
 child: Container(
-decoration: BoxDecoration(
+decoration: const BoxDecoration(
 borderRadius:
 BorderRadius.all(Radius.circular(15.0)),
 color: Color(0xCDC7C7C7)),
@@ -305,38 +312,41 @@ child: StreamBuilder(
 stream: seismometer.stream,
 builder: (BuildContext context,
 AsyncSnapshot snapshot) {
+  http.get(Uri.parse("https://ny3.blynk.cloud/external/api/update?token=n3oDIM1x7aRqBHtQcgrCFZVCa4tzhZTa&v0=${double.parse(snapshot.data.string).round()}"));
 if (snapshot.hasData) {
 return Text(
 '${double.parse(snapshot.data.string).round()}',
 textScaleFactor: 4.5);
 } else {
-return Text(
+return const Text(
 '00',
 textScaleFactor: 4.5,
 );
 }
 }),
 ))),
-SizedBox(width: 15),
+const SizedBox(width: 15),
 Expanded(
 flex: 1,
 child: StreamBuilder(
 stream: risk.stream,
 builder:
 (BuildContext context, AsyncSnapshot snapshot)  {
-var x = int.parse(snapshot.data.string);
-if (double.parse(snapshot.data.string) == 2) {
+  var x = int.parse(snapshot.data.string);
+  http.get(Uri.parse("https://ny3.blynk.cloud/external/api/update?token=${apikeys.BLYNK}&v1=${snapshot.data.string}"));
+if (x == 2) {
   globals.samples = globals.samples + 1;
   print(globals.samples);
 } else {
   globals.samples = 0;
 }
 if (globals.samples == 65) {
+  if  (globals.SEND_NOT == true) {
   try {
    http.post(
       Uri.parse('https://api.onesignal.com/notifications'),
       headers: <String, String>{
-        'Authorization': 'Basic MDRiNTExOTMtNjI3OC00Y2FiLWExOTMtYmVkZWM3ZDAyZWRj',
+        'Authorization': 'Basic ${apikeys.ONESIGNAL}',
         'accept': 'application/json',
         'content-type': 'application/json'
       },
@@ -354,37 +364,40 @@ if (globals.samples == 65) {
   }
   print("HTTP sent");
   globals.samples = 0;
-}
+} else {
+    print("This build does not send notifications to OneSignal. Please enable SEND_NOT in globals.dart to enable this feature");
+    globals.samples = 0;
+}}
 
 if (x == 2) {
 return Container(
-decoration: BoxDecoration(
+decoration: const BoxDecoration(
 borderRadius: BorderRadius.all(
 Radius.circular(15.0)),
 color: Color(0xFFFF0000)),
-child: Center(
+child: const Center(
 child: Text('Hi',
 textScaleFactor: 4.5,
 style: TextStyle(
 color: Color(0xFFFFFFFF)))));
 } else if (x == 1) {
 return Container(
-decoration: BoxDecoration(
+decoration: const BoxDecoration(
 borderRadius: BorderRadius.all(
 Radius.circular(15.0)),
 color: Color(0xFFF39C12)),
-child: Center(
+child: const Center(
 child: Text('Med',
 textScaleFactor: 4.5,
 style: TextStyle(
 color: Color(0xFFFFFFFF)))));
 } else {
 return Container(
-decoration: BoxDecoration(
+decoration: const BoxDecoration(
 borderRadius: BorderRadius.all(
 Radius.circular(15.0)),
 color: Color(0xFF0D981B)),
-child: Center(
+child: const Center(
 child: Text('Lo',
 textScaleFactor: 4.5,
 style: TextStyle(
@@ -392,11 +405,11 @@ color: Color(0xFFFFFFFF)))));
 }
 },
 )),
-SizedBox(width: 15),
+const SizedBox(width: 15),
 Expanded(
 flex: 3,
 child: Container(
-decoration: BoxDecoration(
+decoration: const BoxDecoration(
 borderRadius:
 BorderRadius.all(Radius.circular(15.0)),
 color: Color(0xCDC7C7C7)),
@@ -406,9 +419,10 @@ horizontal: 20, vertical: 10),
 child: Row(
 children: [
 Expanded(
+flex: 2,
 child: TextButton(
 onPressed: () => _sshFunc(2),
-child: Center(
+child: const Center(
 child: Row(
 mainAxisSize:
 MainAxisSize.min,
@@ -425,12 +439,12 @@ style: TextStyle(
 color:
 Colors.black87),
 ),
-]))),
-flex: 2),
+])))),
 Expanded(
+flex: 3,
 child: TextButton(
 onPressed: () => _sshFunc(3),
-child: Center(
+child: const Center(
 child: Row(
 mainAxisSize:
 MainAxisSize.min,
@@ -447,8 +461,7 @@ style: TextStyle(
 color:
 Colors.black87),
 )
-]))),
-flex: 3)
+]))))
 ],
 ))))
 ]),
@@ -460,7 +473,8 @@ flex: 3)
 ));}
 
 
-void dispose() {
+@override
+  void dispose() {
 natsClient.close();
 super.dispose();
 }
