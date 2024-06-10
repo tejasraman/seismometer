@@ -29,4 +29,4 @@ https://ny3.blynk.cloud/external/api/get?token=APIKEY&v0
 
 In OneSignal, set up Firebase Cloud Messaging. After that, set up an [Android notification channel](https://documentation.onesignal.com/docs/android-notification-categories) and a subgroup. Set the subgroup importance to Urgent and copy the Channel ID, as well as your [App ID and REST API key](https://documentation.onesignal.com/docs/keys-and-ids)
 
-in the file `apikeys.dart` for BOTH apps, add all required keys where placeholders are present and build apps.~~~~
+in the file `apikeys.dart` for BOTH apps, add all required keys where placeholders are present and build apps.
